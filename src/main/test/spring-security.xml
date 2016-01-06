@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+            http://www.springframework.org/schema/security
+            http://www.springframework.org/schema/security/spring-security.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-3.2.xsd
+            http://www.springframework.org/schema/security/oauth2
+            http://www.springframework.org/schema/security/spring-security-oauth2-1.0.xsd">
+            
+     <!-- ************************autenticación local sin google****************************************************  -->         
+    <!--  <security:authentication-manager>
+        <security:authentication-provider>
+             <security:user-service>
+                 <security:user name="admin" password="admin" authorities="ROLE_USER"/>
+             </security:user-service>
+        </security:authentication-provider>
+   </security:authentication-manager>  -->     
+  
+   <!-- Reglas para el csrf token  --> 
+  	<!--   <security:http auto-config="true" use-expressions="true">
+   	   <security:intercept-url pattern="/index" access="permitAll"/>
+       <security:intercept-url pattern="/product" access="permitAll"/>
+       <security:intercept-url pattern="/provisional" access="permitAll"/>
+       
+       
+       <security:form-login login-page="/userHome.jsp" login-processing-url="/j_spring_security_check" 
+                authentication-failure-url="/provisional.jsp" default-target-url="/index.jsp" 
+                always-use-default-target="true"/>
+        <security:logout logout-success-url="/logout" /> 
+        <security:anonymous enabled="true" granted-authority="REGULAR" />
+    </security:http>  
+    -->
+     <!--  <security:csrf /> esto va dentro de /security-->   
+    
+    <!-- *************************************************************************************************************  -->
+    
+    <!-- configurar la red social google -->
+    
+     <bean id="google2Provider" class="org.scribe.up.provider.impl.Google2Provider">
+       <!--  <property name="key" value="{93107280022-mmp1tfevnrpem82ktg91dra2ifm8pfiv.apps.googleusercontent.com}"/>
+        <property name="secret" value="${gnvnKFocBfYyN7JYCf7Bh7VU}"/>  -->
+        
+        <property name="key" value="93107280022-mmp1tfevnrpem82ktg91dra2ifm8pfiv.apps.googleusercontent.com"/>
+        <property name="secret" value="gnvnKFocBfYyN7JYCf7Bh7VU"/> 
+                
+        <property name="scope" value="EMAIL_AND_PROFILE"/>
+        <property name="callbackUrl" value="http://localhost:8080/MyShopOnline/j_spring_oauth_security_check" />
+    </bean>
+    
+    <bean id="providersDefinition" class="org.scribe.up.provider.ProvidersDefinition">
+        <property name="baseUrl" value="http://localhost:8080/j_spring_oauth_security_check" />
+        <property name="providers">
+            <list>
+                <ref bean="google2Provider" />
+            </list>
+        </property>
+    </bean>
+ 
+    
+    <bean id="oAuthProvider" class="com.github.leleuj.ss.oauth.client.authentication.OAuthAuthenticationProvider">
+        <property name="providersDefinition" ref="providersDefinition" />
+    </bean>
+    
+     <bean id="google2EntryPoint" class="com.github.leleuj.ss.oauth.client.web.OAuthAuthenticationEntryPoint">
+        <property name="provider" ref="google2Provider" />
+    </bean>
+    
+     <!--  google  -->   
+    <bean id="oAuthFilter" class="com.github.leleuj.ss.oauth.client.web.OAuthAuthenticationFilter">
+        <property name="providersDefinition" ref="providersDefinition" />
+        <property name="authenticationManager" ref="authenticationManager" />
+        <property name="provider" ref="facebookProvider" />
+         
+    </bean>
+    
+    <security:authentication-manager alias="authenticationManager">
+        <security:authentication-provider ref="oAuthProvider"/>
+   </security:authentication-manager>  
+   
+   
+   <security:http entry-point-ref="google2EntryPoint">  
+   	   <security:custom-filter before="CAS_FILTER" ref="oAuthFilter" />   	   
+   	   <security:intercept-url pattern="/userHome" access="isAnonymous()" />
+   	   <security:intercept-url pattern="/j_spring_oauth_security_check" access="isAnonymous()"/>
+  <security:intercept-url pattern="/**" access="isAnonymous()" />
+   	   <!-- <security:intercept-url pattern="/userHome" access="IS_AUTHENTICATED_FULLY"/>  -->
+   	  
+       
+      <security:form-login login-page="/userHome.jsp" login-processing-url="/j_spring_oauth_security_check" 
+                authentication-failure-url="http://www.google.com" default-target-url="http://www.google.com" 
+                always-use-default-target="true"/> 
+       
+        <security:logout logout-success-url="/logout" /> 
+         <!--  <security:csrf /> --> 
+    </security:http>  
+    
+    <!--  facebook  -->
+    
+    <bean id="facebookProvider" class="org.scribe.up.provider.impl.FacebookProvider">
+        <property name="key" value="xxx"/>
+        <property name="secret" value="xxx"/> 
+        <property name="scope" value="EMAIL_AND_PROFILE"/>
+        <property name="callbackUrl" value="http://localhost:8080/MyShopOnline/j_spring_oauth_security_check" />
+    </bean>
+    
+    
+    
+  </beans>
+    

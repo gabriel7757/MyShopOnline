@@ -1,0 +1,9 @@
+@CHARSET "ISO-8859-1";
+
+.capatop
+{
+	text-align: center;
+	padding-top: 100px;
+	color: rgb(255,0,0);
+	text-decoration: blue; 
+}
